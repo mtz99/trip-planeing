@@ -96,8 +96,8 @@ const NoteApp = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Notebook</h1>
+    <div className="container">
+      <h1 className="main-header">Notebook</h1>
       
       {/* Note Form */}
       <div className="bg-white p-4 rounded shadow mb-6">
