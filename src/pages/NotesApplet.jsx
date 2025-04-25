@@ -218,31 +218,31 @@ const NoteApp = () => {
         ) : (
           <div className="space-y-4">
             {filteredNotes.map(note => (
-              <div key={note.id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between items-start mb-2">
+              <div key={note.id} className="subbody-text">
+                <div className="subbody-text">
                   <div>
-                    <h3 className="font-bold text-lg">{note.title}</h3>
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">{note.category}</span>
-                  </div>
-                  <div className="space-x-2">
-                    <button 
-                      onClick={() => editNote(note)}
-                      className="text-blue-500 hover:text-blue-700"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => deleteNote(note.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                    <h3>{note.title}</h3>
+                    <span>{note.category}</span>
+                  </div>    
                 </div>
                 <div className="prose max-w-none mt-2">
                   <ReactMarkdown>{note.content}</ReactMarkdown>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">{note.createdAt}</p>
+                <div className="space-x-2">
+                    <button 
+                      onClick={() => editNote(note)}
+                      className="EditDelButtons"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => deleteNote(note.id)}
+                      className="EditDelButtons"
+                    >
+                      Delete
+                    </button>
+                  </div>
               </div>
             ))}
           </div>
