@@ -9,7 +9,7 @@ const NoteApp = () => {
     id: null, 
     title: '', 
     content: '', 
-    category: 'Personal' 
+    category: 'Activities' 
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState(['Activities', 'Food', 'Hotels', 'Transportation']);
@@ -108,7 +108,7 @@ const NoteApp = () => {
           <input
             type="text"
             placeholder="Note Title"
-            className="input"
+            className="w-full p-2 mb-4 border rounded h-64 font-mono"
             value={currentNote.title}
             onChange={(e) => setCurrentNote({...currentNote, title: e.target.value})}
           />
@@ -140,7 +140,7 @@ const NoteApp = () => {
         </div>
         
         {isPreview ? (
-          <div className="border p-2 rounded mb-4 h-64 overflow-auto prose">
+          <div className="subbody-text">
             <ReactMarkdown>{currentNote.content}</ReactMarkdown>
           </div>
         ) : (
@@ -162,7 +162,7 @@ const NoteApp = () => {
           {currentNote.id && (
             <button 
               onClick={() => {
-                setCurrentNote({ id: null, title: '', content: '', category: 'Personal' });
+                setCurrentNote({ id: null, title: '', content: '', category: 'Activities' });
                 setIsPreview(false);
               }}
               className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
@@ -173,7 +173,7 @@ const NoteApp = () => {
         </div>
 
         {/* Markdown Help */}
-        <div className="mt-8 p-4 bg-gray-50 rounded">
+        <div className="markdowntips-text">
           <h3 className="font-bold mb-2">Markdown Tips:</h3>
           <ul className="text-sm text-gray-700 space-y-1">
             <li><code># Heading 1</code> for main headings</li>
@@ -222,13 +222,13 @@ const NoteApp = () => {
                 <div className="subbody-text">
                   <div>
                     <h3>{note.title}</h3>
-                    <span>{note.category}</span>
+                    <span className='category-text'>{note.category}</span>
                   </div>    
                 </div>
                 <div className="prose max-w-none mt-2">
                   <ReactMarkdown>{note.content}</ReactMarkdown>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">{note.createdAt}</p>
+                <p className="small-text">{note.createdAt}</p>
                 <div className="space-x-2">
                     <button 
                       onClick={() => editNote(note)}
