@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import './NotesApplet.css';
 
 const NoteApp = () => {
   // State for notes and current note being edited
@@ -8,7 +9,7 @@ const NoteApp = () => {
     id: null, 
     title: '', 
     content: '', 
-    category: 'Personal' 
+    category: 'Activities' 
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState(['Activities', 'Food', 'Hotels', 'Transportation']);
@@ -17,6 +18,8 @@ const NoteApp = () => {
 
   // Load notes from localStorage on initial render
   useEffect(() => {
+    document.body.classList.add('notes-body');
+
     const savedNotes = localStorage.getItem('notes');
     const savedCategories = localStorage.getItem('categories');
     
@@ -96,16 +99,16 @@ const NoteApp = () => {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Notebook</h1>
+    <div className="container">
+      <h1 className="main-header">Notebook</h1>
       
       {/* Note Form */}
-      <div className="bg-white p-4 rounded shadow mb-6">
+      <div className="child-container">
         <div className="mb-4">
           <input
             type="text"
             placeholder="Note Title"
-            className="w-full p-2 mb-2 border rounded"
+            className="w-full p-2 mb-4 border rounded h-64 font-mono"
             value={currentNote.title}
             onChange={(e) => setCurrentNote({...currentNote, title: e.target.value})}
           />
@@ -137,7 +140,7 @@ const NoteApp = () => {
         </div>
         
         {isPreview ? (
-          <div className="border p-2 rounded mb-4 h-64 overflow-auto prose">
+          <div className="subbody-text">
             <ReactMarkdown>{currentNote.content}</ReactMarkdown>
           </div>
         ) : (
@@ -152,14 +155,14 @@ const NoteApp = () => {
         <div className="flex justify-between">
           <button 
             onClick={saveNote}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-600"
           >
             {currentNote.id ? 'Update Note' : 'Add Note'}
           </button>
           {currentNote.id && (
             <button 
               onClick={() => {
-                setCurrentNote({ id: null, title: '', content: '', category: 'Personal' });
+                setCurrentNote({ id: null, title: '', content: '', category: 'Activities' });
                 setIsPreview(false);
               }}
               className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
@@ -168,10 +171,26 @@ const NoteApp = () => {
             </button>
           )}
         </div>
+
+        {/* Markdown Help */}
+        <div className="markdowntips-text">
+          <h3 className="font-bold mb-2">Markdown Tips:</h3>
+          <ul className="text-sm text-gray-700 space-y-1">
+            <li><code># Heading 1</code> for main headings</li>
+            <li><code>## Heading 2</code> for subheadings</li>
+            <li><code>**bold**</code> for <strong>bold text</strong></li>
+            <li><code>*italic*</code> for <em>italic text</em></li>
+            <li><code>- item</code> for bullet lists</li>
+            <li><code>1. item</code> for numbered lists</li>
+            <li><code>[link text](url)</code> for links</li>
+            <li><code>![alt text](image-url)</code> for images</li>
+            <li><code>```code```</code> for code blocks</li>
+          </ul>
+        </div>
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-4 flex">
+      <div className="child-container">
         <input
           type="text"
           placeholder="Search notes..."
@@ -192,59 +211,45 @@ const NoteApp = () => {
       </div>
       
       {/* Notes List */}
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Your Notes ({filteredNotes.length})</h2>
+      <div className='child-container'>
+        <h2 className="body-text">Your Notes ({filteredNotes.length})</h2>
         {filteredNotes.length === 0 ? (
-          <p className="text-gray-500">No notes found. Create your first note!</p>
+          <p className="subbody-text">No notes found. Create your first note!</p>
         ) : (
           <div className="space-y-4">
             {filteredNotes.map(note => (
-              <div key={note.id} className="bg-white p-4 rounded shadow">
-                <div className="flex justify-between items-start mb-2">
+              <div key={note.id} className="subbody-text">
+                <div className="subbody-text">
                   <div>
-                    <h3 className="font-bold text-lg">{note.title}</h3>
-                    <span className="text-xs px-2 py-1 bg-gray-100 rounded-full">{note.category}</span>
-                  </div>
-                  <div className="space-x-2">
+                    <h3>{note.title}</h3>
+                    <span className='category-text'>{note.category}</span>
+                  </div>    
+                </div>
+                <div className="prose max-w-none mt-2">
+                  <ReactMarkdown>{note.content}</ReactMarkdown>
+                </div>
+                <p className="small-text">{note.createdAt}</p>
+                <div className="space-x-2">
                     <button 
                       onClick={() => editNote(note)}
-                      className="text-blue-500 hover:text-blue-700"
+                      className="EditDelButtons"
                     >
                       Edit
                     </button>
                     <button 
                       onClick={() => deleteNote(note.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="EditDelButtons"
                     >
                       Delete
                     </button>
                   </div>
-                </div>
-                <div className="prose max-w-none mt-2">
-                  <ReactMarkdown>{note.content}</ReactMarkdown>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">{note.createdAt}</p>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Markdown Help */}
-      <div className="mt-8 p-4 bg-gray-50 rounded">
-        <h3 className="font-bold mb-2">Markdown Tips:</h3>
-        <ul className="text-sm text-gray-700 space-y-1">
-          <li><code># Heading 1</code> for main headings</li>
-          <li><code>## Heading 2</code> for subheadings</li>
-          <li><code>**bold**</code> for <strong>bold text</strong></li>
-          <li><code>*italic*</code> for <em>italic text</em></li>
-          <li><code>- item</code> for bullet lists</li>
-          <li><code>1. item</code> for numbered lists</li>
-          <li><code>[link text](url)</code> for links</li>
-          <li><code>![alt text](image-url)</code> for images</li>
-          <li><code>```code```</code> for code blocks</li>
-        </ul>
-      </div>
+      
     </div>
   );
 };
