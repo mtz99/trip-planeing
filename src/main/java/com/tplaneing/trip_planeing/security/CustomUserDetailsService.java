@@ -5,24 +5,28 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private InMemoryUserDetailsManager inMemoryUserDetailsManager;
+    // You would typically inject a UserRepository or similar here
+    // private final UserRepository userRepository;
+    //
+    // public CustomUserDetailsService(UserRepository userRepository) {
+    //     this.userRepository = userRepository;
+    // }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return inMemoryUserDetailsManager.loadUserByUsername(username);
-    }
-
-    @Autowired
-    public void initialize() {
-        User.UserBuilder users = User.builder();
-        inMemoryUserDetailsManager.createUser(users.username("user").password(new BCryptPasswordEncoder().encode("password")).roles("USER").build());
+        // This is where you would load a user from your database
+        // For demonstration, let's return a hardcoded user
+        if ("testuser".equals(username)) {
+            return User.withUsername("testuser")
+                    .password("{noop}password") // Use {noop} for plain text if no encoder, but encoder is preferred
+                    .roles("USER")
+                    .build();
+        }
+        throw new UsernameNotFoundException("User not found: " + username);
     }
 }
