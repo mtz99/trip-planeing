@@ -2,6 +2,7 @@ package com.tplaneing.trip_planeing.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractAuthenticationFilterConfigurer;
@@ -29,17 +30,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable) //Disable CSRF
-                .cors(cors -> {
-                    cors.configurationSource(corsConfigurationSource());
-                })
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/public/**").permitAll() // Allow public access
-                        .anyRequest().authenticated() // Require authentication for all other requests
-                )
-                .formLogin(withDefaults -> {}) // Enable form login
-                .userDetailsService(customUserDetailsService); // Tell Spring Security to use your CustomUserDetailsService
-                //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll); // Allow everyone to access the login page
+            .csrf(AbstractHttpConfigurer::disable) //Disable CSRF
+            .cors(cors -> {
+                cors.configurationSource(corsConfigurationSource());
+            })
+            .authorizeHttpRequests(authorize -> authorize
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow public access
+                    .requestMatchers("/hello").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/messages").authenticated()
+                    .anyRequest().permitAll()
+            )
+            .formLogin(AbstractHttpConfigurer::disable) // Enable form login
+            .userDetailsService(customUserDetailsService) // Tell Spring Security to use your CustomUserDetailsService
+            .httpBasic(httpBasic -> {});
+            //.formLogin(AbstractAuthenticationFilterConfigurer::permitAll); // Allow everyone to access the login page
         return http.build();
     }
 

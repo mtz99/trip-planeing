@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { getMessages, saveMessage } from '../services/apiService';
 
 const MessageComponent = () => {
@@ -11,25 +12,7 @@ const MessageComponent = () => {
 
     const fetchMessages = async () => {
         try {
-            const credentials = { username: 'testuser', password: 'password' }; // Replace with actual credentials
-            const response = await fetch('http://localhost:8080/hello', {
-                method: 'GET', // Or 'POST', 'PUT', etc.
-                headers: {
-                'Authorization': `Basic ${credentials}`, // <-- THIS IS THE KEY LINE
-                'Content-Type': 'application/json' // If you're sending a body
-                }
-            });
-
-            if (!response.ok) {
-                // Handle non-2xx responses like 401 Unauthorized, 403 Forbidden
-                console.error(`HTTP error! Status: ${response.status}`);
-                const errorText = await response.text(); // Get raw response for debugging
-                console.error('Error Response Body:', errorText);
-                setMessages([]); // Ensure messages is an array to prevent .map error
-                return;
-            }
-
-            const data = await getMessages();
+            const data = await getMessages({ username: 'testuser', password: 'password' });
             setMessages(data);
         } catch (error) {
             console.error('Failed to fetch messages', error);
@@ -38,7 +21,7 @@ const MessageComponent = () => {
 
     const handleSaveMessage = async () => {
         try {
-            await saveMessage(newMessage);
+            await saveMessage(newMessage, { username: 'testuser', password: 'password' });
             fetchMessages();
             setNewMessage('');
         } catch (error) {
