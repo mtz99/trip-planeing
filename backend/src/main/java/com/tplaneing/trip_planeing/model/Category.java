@@ -7,7 +7,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String category;
+    private String content;
 
     public Category(){
     }
@@ -16,8 +16,8 @@ public class Category {
 
     public void setID(Long id){ this.id = id; }
 
-    public String getCategory() { return category; }
+    public String getContent() { return content; }
 
-    public void setCategory(String category){ this.category = category; }
+    public void setContent(String content){ this.content = content; }
 
 }

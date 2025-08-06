@@ -10,6 +10,7 @@ public class Notes {
     private String title;
     private String content;
     private String category;
+    private String createdAt;
 
     public Notes(){
     }
@@ -18,15 +19,19 @@ public class Notes {
 
     public void setID(Long id){ this.id = id; }
 
-    public String getNotesTitle() { return title; }
+    public String getTitle() { return title; }
 
-    public void setNotesTitle(String title){ this.title = title; }
+    public void setTitle(String title){ this.title = title; }
 
-    public String getNotesContent(){ return content; }
+    public String getContent(){ return content; }
 
-    public void setNotesContent(String content){ this.content = content; }
+    public void setContent(String content){ this.content = content; }
 
-    public String getNotesCategories(){ return category; }
+    public String getCategories(){ return category; }
 
-    public void setNotesCategories(String category){ this.category = category; }
+    public void setCategories(String category){ this.category = category; }
+
+    public String getCreatedAt(){ return createdAt; }
+
+    public void setCreatedAt(String createdAt){ this.createdAt = createdAt; }
 }

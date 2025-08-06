@@ -37,7 +37,11 @@ export const getMessages = async (credentials) => {
 export const saveMessage = async (messageContent, credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     try {
-        const payload = { content: messageContent };
+        const payload = { 
+            title: messageContent.title || 'Untitled',
+            content: messageContent.content || '',
+            createdAt: messageContent.createdAt || '',
+            categories: messageContent.category || ''};
         const response = await instance.post(`${API_URL}/notes`, payload);
         return response.data;
     } 
@@ -71,7 +75,7 @@ export const getCategory = async (credentials) => {
 export const saveCategory = async (categoryContent, credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     try {
-        const payload = { content: categoryContent };
+        const payload = { content: categoryContent || '' };
         const response = await instance.post(`${API_URL}/category`, payload);
         return response.data;
     } 

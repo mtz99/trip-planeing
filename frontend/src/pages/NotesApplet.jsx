@@ -4,7 +4,7 @@ import './NotesApplet.css';
 import { getMessages, saveMessage, getCategory, saveCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
-  // State for notes and current note being edited
+  // Variables for notes, categories, search, and filter
   const [notes, setNotes] = useState([]);
   const [currentNote, setCurrentNote] = useState({ 
     id: null, 
@@ -16,6 +16,10 @@ const NoteApp = () => {
   const [categories, setCategories] = useState(['Activities', 'Food', 'Hotels', 'Transportation']);
   const [filterCategory, setFilterCategory] = useState('All');
   const [isPreview, setIsPreview] = useState(false);
+
+// Variable to hold the note or cateogry to be posted
+  const [noteToPost, setNoteToPost] = useState('');
+  const [categoryToPost, setCategoryToPost] = useState('');
 
   // Load notes and categories from backend on initial render
   useEffect(() => {
@@ -51,18 +55,16 @@ const NoteApp = () => {
 
   // Save notes and categories to localStorage whenever they change
   useEffect(() => {
-    //localStorage.setItem('notes', JSON.stringify(notes)); // Previously used localStorage to save notes
     try {
-          saveMessage(currentNote, { username: 'testuser', password: 'password' });
+          saveMessage(noteToPost, { username: 'testuser', password: 'password' });
         } catch (error) {
             console.error('Failed to save message', error);
         }
   }, [notes]);
   
   useEffect(() => {
-    //localStorage.setItem('categories', JSON.stringify(categories)); // Previously used localStorage to save categories
     try {
-          saveCategory(categories, { username: 'testuser', password: 'password' });
+          saveCategory(categoryToPost, { username: 'testuser', password: 'password' });
         } catch (error) {
             console.error('Failed to save message', error);
         }
@@ -86,6 +88,7 @@ const NoteApp = () => {
         createdAt: new Date().toLocaleString()
       };
       setNotes([newNote, ...notes]);
+      setNoteToPost(newNote);
     }
     
     // Reset current note
@@ -109,6 +112,7 @@ const NoteApp = () => {
     const newCategory = prompt('Enter a new category name:');
     if (newCategory && !categories.includes(newCategory)) {
       setCategories([...categories, newCategory]);
+      setCategoryToPost(newCategory);
     }
   };
 
