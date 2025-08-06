@@ -1,3 +1,4 @@
+//Just a test, remove this file once no longer needed.
 package com.tplaneing.trip_planeing.model;
 
 import jakarta.persistence.Entity;

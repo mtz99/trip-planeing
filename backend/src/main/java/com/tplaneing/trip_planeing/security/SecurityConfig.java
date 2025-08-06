@@ -37,7 +37,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Allow public access
                     .requestMatchers("/hello").authenticated()
-                    .requestMatchers(HttpMethod.POST, "/messages").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/notes").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/category").authenticated()
                     .anyRequest().permitAll()
             )
             .formLogin(AbstractHttpConfigurer::disable) // Enable form login

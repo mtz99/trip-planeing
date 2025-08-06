@@ -7,17 +7,12 @@ import MessageComponent from './components/MessageComponent.jsx';
 function App() {
 
   return (
-    <div className = "App">
-        <header className="App-header">
-            <MessageComponent />
-        </header>
-    </div>
-    /*<BrowserRouter>
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/notes" element={<NoteApp />} />
+        <Route path="/notebook" element={<NoteApp />} />
       </Routes>
-    </BrowserRouter>*/
+    </BrowserRouter>
   )
 }
 

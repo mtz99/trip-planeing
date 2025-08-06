@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './NotesApplet.css';
+import { getMessages, saveMessage, getCategory, saveCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
   // State for notes and current note being edited
@@ -16,13 +17,13 @@ const NoteApp = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   const [isPreview, setIsPreview] = useState(false);
 
-  // Load notes from localStorage on initial render
+  // Load notes and categories from backend on initial render
   useEffect(() => {
     document.body.classList.add('notes-body');
 
-    const savedNotes = localStorage.getItem('notes');
+    /*const savedNotes = localStorage.getItem('notes'); //Previously used localStorage to local notes and categories
     const savedCategories = localStorage.getItem('categories');
-    
+
     if (savedNotes) {
       setNotes(JSON.parse(savedNotes));
     }
@@ -30,17 +31,44 @@ const NoteApp = () => {
     if (savedCategories) {
       setCategories(JSON.parse(savedCategories));
     }
+      */
+
+    try {
+        const savedNotes = getMessages({ username: 'testuser', password: 'password' });
+        setNotes(JSON.parse(savedNotes));
+    } catch (error) {
+        console.error('Failed to fetch messages', error);
+    }
+    
+    try {
+        const savedCategories = getCategory({ username: 'testuser', password: 'password' });
+        setNotes(JSON.parse(savedCategories));
+    } catch (error) {
+        console.error('Failed to fetch categories', error);
+    }
+
   }, []);
 
   // Save notes and categories to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('notes', JSON.stringify(notes));
+    //localStorage.setItem('notes', JSON.stringify(notes)); // Previously used localStorage to save notes
+    try {
+          saveMessage(currentNote, { username: 'testuser', password: 'password' });
+        } catch (error) {
+            console.error('Failed to save message', error);
+        }
   }, [notes]);
   
   useEffect(() => {
-    localStorage.setItem('categories', JSON.stringify(categories));
+    //localStorage.setItem('categories', JSON.stringify(categories)); // Previously used localStorage to save categories
+    try {
+          saveCategory(categories, { username: 'testuser', password: 'password' });
+        } catch (error) {
+            console.error('Failed to save message', error);
+        }
   }, [categories]);
 
+  
   // Create a new note or update existing one
   const saveNote = () => {
     if (!currentNote.title.trim() && !currentNote.content.trim()) return;
