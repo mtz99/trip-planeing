@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import ReactMarkdown from 'react-markdown';
 import './NotesApplet.css';
-import { getMessages, saveMessage, delMessage, getCategory, saveCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
+import { getMessages, saveMessage, delMessage, getCategory, saveCategory, delCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
   // Variables for notes, categories, search, and filter
@@ -17,6 +18,51 @@ const NoteApp = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   const [isPreview, setIsPreview] = useState(false);
 
+  // States to show category components
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  // Modal component for category management
+  const Modal = ({ isOpen, onClose, children }) => {
+    if (!isOpen) return null;
+
+    return ReactDOM.createPortal(
+      <div 
+        className="modal-overlay"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+        }}
+        onClick={onClose}
+      >
+        <div 
+          style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '90%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            position: 'relative',
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {children}
+        </div>
+      </div>,
+      document.body
+    );
+  };
 
 
   // Load notes and categories from backend on initial render
@@ -67,6 +113,7 @@ const NoteApp = () => {
     setIsPreview(false);
   };
 
+
   // Delete a note
   const deleteNote = (id) => {
     try{
@@ -77,14 +124,31 @@ const NoteApp = () => {
     catch (error) {
         console.error('Failed to delete message', error);
     }
-    
   };
+
 
   // Edit a note (load it into the form)
   const editNote = (note) => {
     setCurrentNote(note);
     setIsPreview(false);
   };
+
+
+  // Toggle between edit and preview modes
+  const togglePreview = () => {
+    setIsPreview(!isPreview);
+  };
+
+
+   // Filter notes based on search term and selected category
+  const filteredNotes = notes.filter(note => {
+    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          note.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === 'All' || note.category === filterCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
+
 
   // Add a new category
   const addCategory = async () => {
@@ -97,21 +161,74 @@ const NoteApp = () => {
     }
   };
 
-  // Filter notes based on search term and selected category
-  const filteredNotes = notes.filter(note => {
-    const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          note.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === 'All' || note.category === filterCategory;
-    
-    return matchesSearch && matchesCategory;
-  });
-
-  // Toggle between edit and preview modes
-  const togglePreview = () => {
-    setIsPreview(!isPreview);
+  // Manage existing categories
+  const openCategoryModal = async () => {
+    setShowCategoryModal(true);
   };
 
+  const closeCategoryModal = () => {
+    setShowCategoryModal(false);
+    setEditingCategory('');
+    setNewCategoryName('');
+  };
+
+  const startEditCategory = (category) => {
+    setEditingCategory(category);
+    setNewCategoryName(category);
+  };
+
+  const saveEditCategory = () => {
+    if (newCategoryName.trim() && newCategoryName !== editingCategory) {
+      // Update category in categories array
+      setCategories(categories.map(cat => 
+        cat === editingCategory ? newCategoryName.trim() : cat
+      ));
+      
+      // Update any existing notes that use this category
+      const updatedNotes = notes.map(note => 
+        note.category === editingCategory 
+          ? {...note, category: newCategoryName.trim()} 
+          : note
+      );
+      setNotes(updatedNotes);
+    }
+    setEditingCategory('');
+    setNewCategoryName('');
+  };
+
+  const deleteCategory = (categoryToDelete) => {
+    if (categories.length <= 1) {
+      alert("You must have at least one category.");
+      return;
+    }
+    
+    const confirmDelete = window.confirm(`Are you sure you want to delete "${categoryToDelete}"? Notes in this category will be moved to "${categories[0]}".`);
+    
+    if (confirmDelete) {
+      // Delete category from backend
+      try{
+        delCategory(categoryToDelete.id, { username: 'testuser', password: 'password' });
+        // Remove category from state.
+        setCategories(categories.filter(cat => cat !== categoryToDelete));
+      }
+      catch (error) {
+          console.error('Failed to delete message', error);
+      }
+
+
+      // Move existing notes to first available category
+      const updatedNotes = notes.map(note => 
+        note.category === categoryToDelete 
+          ? {...note, category: updatedCategories[0]} 
+          : note
+      );
+      setNotes(updatedNotes);
+    }
+  };
+ 
+
   return (
+    <>
     <div className="container">
       <h1 className="main-header">Notebook</h1>
       
@@ -144,10 +261,10 @@ const NoteApp = () => {
             </button>
             
             <button 
-              onClick={togglePreview}
-              className="bg-gray-200 px-2 py-1 rounded text-sm ml-auto"
+              onClick={openCategoryModal}
+              className="bg-gray-200 px-2 py-1 rounded text-sm"
             >
-              {isPreview ? 'Edit' : 'Preview'}
+              Manage Categories
             </button>
           </div>
         </div>
@@ -172,6 +289,14 @@ const NoteApp = () => {
           >
             {currentNote.id ? 'Update Note' : 'Add Note'}
           </button>
+
+          <button 
+            onClick={togglePreview}
+            className="bg-gray-200 px-2 py-1 rounded text-sm ml-auto"
+          >
+            {isPreview ? 'Edit' : 'Preview'}
+          </button>
+
           {currentNote.id && (
             <button 
               onClick={() => {
@@ -261,9 +386,144 @@ const NoteApp = () => {
           </div>
         )}
       </div>
-
-      
     </div>
+
+    {/* Category Management Modal */}
+      <Modal isOpen={showCategoryModal} onClose={closeCategoryModal}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Manage Categories</h2>
+          <button 
+            onClick={closeCategoryModal}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              cursor: 'pointer',
+              color: '#666',
+              padding: '0',
+              margin: '0',
+            }}
+          >
+            ×
+          </button>
+        </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {categories.map(category => (
+            <div key={category} style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              padding: '8px', 
+              border: '1px solid #ccc', 
+              borderRadius: '4px' 
+            }}>
+              {editingCategory === category ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                  <input
+                    type="text"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: '4px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                    }}
+                    autoFocus
+                  />
+                  <button 
+                    onClick={saveEditCategory}
+                    style={{
+                      backgroundColor: '#22c55e',
+                      color: 'white',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      margin: '0',
+                    }}
+                  >
+                    Save
+                  </button>
+                  <button 
+                    onClick={() => setEditingCategory('')}
+                    style={{
+                      backgroundColor: '#d1d5db',
+                      border: 'none',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      margin: '0',
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span style={{ flex: 1, fontSize: '14px' }}>{category}</span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      onClick={() => startEditCategory(category)}
+                      style={{
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        margin: '0',
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => deleteCategory(category)}
+                      disabled={categories.length <= 1}
+                      style={{
+                        backgroundColor: categories.length <= 1 ? '#ccc' : '#ef4444',
+                        color: 'white',
+                        border: 'none',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        cursor: categories.length <= 1 ? 'not-allowed' : 'pointer',
+                        margin: '0',
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #ccc' }}>
+          <button 
+            onClick={closeCategoryModal}
+            style={{
+              width: '100%',
+              backgroundColor: '#f3f4f6',
+              border: '1px solid #ccc',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              margin: '0',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </Modal>
+    </>
   );
 };
 

@@ -24,12 +24,12 @@ export const getMessages = async (credentials) => {
             return response.data;
         }
         else{
-            console.warn('GET /hello did not return an array:', response.data);
+            console.warn('GET /notes did not return an array:', response.data);
             return [];
         }
     } 
     catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('Error fetching notes:', error);
         throw error;
     }
 };
@@ -54,7 +54,7 @@ export const saveMessage = async (messageContent, credentials) => {
         }
     } 
     catch (error) {
-        console.error('Error saving message:', error);
+        console.error('Error saving notes:', error);
         throw error;
     }
 };
@@ -62,11 +62,11 @@ export const saveMessage = async (messageContent, credentials) => {
 export const delMessage = async (messageId, credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     try {
-        console.log('Deleting message with ID:', messageId);
+        console.log('Deleting note with ID:', messageId);
         await instance.delete(`${API_URL}/notes/${messageId}`);
     }
     catch (error) {
-        console.error('Error deleting message:', error);
+        console.error('Error deleting notes:', error);
         throw error;
     }
 }
@@ -96,11 +96,31 @@ export const saveCategory = async (categoryContent, credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     try {
         const payload = { content: categoryContent || '' };
-        const response = await instance.post(`${API_URL}/category`, payload);
-        return response.data;
+        if (categoryContent.id) {
+            // Update existing message
+            const response = await instance.put(`${API_URL}/category/${categoryContent.id}`, payload);
+            return response.data;
+        }
+        else {
+            // Create new message
+            const response = await instance.post(`${API_URL}/category`, payload);
+            return response.data;
+        }
     } 
     catch (error) {
         console.error('Error saving category:', error);
         throw error;
     }
 };
+
+export const delCategory = async (categoryId, credentials) => {
+    const instance = createAuthenticatedAxios(credentials);
+    try {
+        console.log('Deleting category with ID:', categoryId);
+        await instance.delete(`${API_URL}/category/${categoryId}`);
+    }
+    catch (error) {
+        console.error('Error deleting category:', error);
+        throw error;
+    }
+}
