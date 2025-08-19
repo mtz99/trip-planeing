@@ -39,17 +39,37 @@ export const saveMessage = async (messageContent, credentials) => {
     try {
         const payload = { 
             title: messageContent.title || 'Untitled',
-            content: messageContent.content || '',
-            createdAt: messageContent.createdAt || '',
-            categories: messageContent.category || ''};
-        const response = await instance.post(`${API_URL}/notes`, payload);
-        return response.data;
+            content: messageContent.content || 'Empty',
+            createdAt: messageContent.createdAt || new Date().toLocaleString(),
+            categories: messageContent.category || 'Empty'};
+        if (messageContent.id) {
+            // Update existing message
+            const response = await instance.put(`${API_URL}/notes/${messageContent.id}`, payload);
+            return response.data;
+        }
+        else {
+            // Create new message
+            const response = await instance.post(`${API_URL}/notes`, payload);
+            return response.data;
+        }
     } 
     catch (error) {
         console.error('Error saving message:', error);
         throw error;
     }
 };
+
+export const delMessage = async (messageId, credentials) => {
+    const instance = createAuthenticatedAxios(credentials);
+    try {
+        console.log('Deleting message with ID:', messageId);
+        await instance.delete(`${API_URL}/notes/${messageId}`);
+    }
+    catch (error) {
+        console.error('Error deleting message:', error);
+        throw error;
+    }
+}
 
 export const getCategory = async (credentials) => {
     const instance = createAuthenticatedAxios(credentials);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './NotesApplet.css';
-import { getMessages, saveMessage, getCategory, saveCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
+import { getMessages, saveMessage, delMessage, getCategory, saveCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
   // Variables for notes, categories, search, and filter
@@ -17,63 +17,41 @@ const NoteApp = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   const [isPreview, setIsPreview] = useState(false);
 
-// Variable to hold the note or cateogry to be posted
-  const [noteToPost, setNoteToPost] = useState('');
-  const [categoryToPost, setCategoryToPost] = useState('');
+
 
   // Load notes and categories from backend on initial render
   useEffect(() => {
     document.body.classList.add('notes-body');
-
-    /*const savedNotes = localStorage.getItem('notes'); //Previously used localStorage to local notes and categories
-    const savedCategories = localStorage.getItem('categories');
-
-    if (savedNotes) {
-      setNotes(JSON.parse(savedNotes));
-    }
     
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
-      */
-
-    try {
-        const savedNotes = getMessages({ username: 'testuser', password: 'password' });
-        setNotes(JSON.parse(savedNotes));
-    } catch (error) {
-        console.error('Failed to fetch messages', error);
-    }
+    // Fetch notes from backend
+    const fetchNotes = async () => {
+      try {
+          const savedNotes = await getMessages({ username: 'testuser', password: 'password' });
+          setNotes(savedNotes);
+      } catch (error) {
+          console.error('Failed to fetch messages', error);
+      }
+    };
+    fetchNotes();
     
-    try {
-        const savedCategories = getCategory({ username: 'testuser', password: 'password' });
-        setNotes(JSON.parse(savedCategories));
-    } catch (error) {
-        console.error('Failed to fetch categories', error);
-    }
+    const fetchCategories = async () => {
+      try {
+          const savedCategories = await getCategory({ username: 'testuser', password: 'password' });
+          setCategories(savedCategories);
+      } catch (error) {
+          console.error('Failed to fetch categories', error);
+      }
+    };
+    fetchCategories();
 
   }, []);
 
-  // Save notes and categories to localStorage whenever they change
-  useEffect(() => {
-    try {
-          saveMessage(noteToPost, { username: 'testuser', password: 'password' });
-        } catch (error) {
-            console.error('Failed to save message', error);
-        }
-  }, [notes]);
-  
-  useEffect(() => {
-    try {
-          saveCategory(categoryToPost, { username: 'testuser', password: 'password' });
-        } catch (error) {
-            console.error('Failed to save message', error);
-        }
-  }, [categories]);
-
   
   // Create a new note or update existing one
-  const saveNote = () => {
+  const saveNote = async () => {
     if (!currentNote.title.trim() && !currentNote.content.trim()) return;
+    
+    const savedNote = await saveMessage(currentNote, { username: 'testuser', password: 'password' });
     
     if (currentNote.id) {
       // Update existing note
@@ -81,14 +59,7 @@ const NoteApp = () => {
         note.id === currentNote.id ? currentNote : note
       ));
     } else {
-      // Create new note
-      const newNote = {
-        ...currentNote,
-        id: Date.now(),
-        createdAt: new Date().toLocaleString()
-      };
-      setNotes([newNote, ...notes]);
-      setNoteToPost(newNote);
+      setNotes([savedNote, ...notes]);
     }
     
     // Reset current note
@@ -98,7 +69,15 @@ const NoteApp = () => {
 
   // Delete a note
   const deleteNote = (id) => {
-    setNotes(notes.filter(note => note.id !== id));
+    try{
+        delMessage(id, { username: 'testuser', password: 'password' });
+        // Remove note from state
+        setNotes(notes.filter(note => note.id !== id));
+    }
+    catch (error) {
+        console.error('Failed to delete message', error);
+    }
+    
   };
 
   // Edit a note (load it into the form)
@@ -108,11 +87,13 @@ const NoteApp = () => {
   };
 
   // Add a new category
-  const addCategory = () => {
+  const addCategory = async () => {
     const newCategory = prompt('Enter a new category name:');
     if (newCategory && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
-      setCategoryToPost(newCategory);
+
+      const savedCategory = await saveCategory(newCategory, { username: 'testuser', password: 'password' });
+
+      setCategories([...categories, savedCategory]);
     }
   };
 
