@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './NotesApplet.css';
-import { getMessages, saveMessage, delMessage, getCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
+import { getNote, postNote, delNote, getCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
   // Variables for notes, categories, search, and filter
@@ -18,7 +18,6 @@ const NoteApp = () => {
   const [isPreview, setIsPreview] = useState(false);
 
 
-
   // Load notes and categories from backend on initial render
   useEffect(() => {
     document.body.classList.add('notes-body');
@@ -26,7 +25,7 @@ const NoteApp = () => {
     // Fetch notes from backend
     const fetchNotes = async () => {
       try {
-          const savedNotes = await getMessages({ username: 'testuser', password: 'password' });
+          const savedNotes = await getNote({ username: 'testuser', password: 'password' });
           setNotes(savedNotes);
       } catch (error) {
           console.error('Failed to fetch messages', error);
@@ -54,7 +53,7 @@ const NoteApp = () => {
   const saveNote = async () => {
     if (!currentNote.title.trim() && !currentNote.content.trim()) return;
     
-    const savedNote = await saveMessage(currentNote, { username: 'testuser', password: 'password' });
+    const savedNote = await postNote(currentNote, { username: 'testuser', password: 'password' });
     
     if (currentNote.id) {
       // Update existing note
@@ -73,7 +72,7 @@ const NoteApp = () => {
   // Delete a note
   const deleteNote = (id) => {
     try{
-        delMessage(id, { username: 'testuser', password: 'password' });
+        delNote(id, { username: 'testuser', password: 'password' });
         // Remove note from state
         setNotes(notes.filter(note => note.id !== id));
     }

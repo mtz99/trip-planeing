@@ -13,7 +13,7 @@ const createAuthenticatedAxios = (credentials) => {
     });
 };
 
-export const getMessages = async (credentials) => {
+export const getNote = async (credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     // Use the authenticated instance to make the request
     try {
@@ -24,49 +24,49 @@ export const getMessages = async (credentials) => {
             return response.data;
         }
         else{
-            console.warn('GET /hello did not return an array:', response.data);
+            console.warn('GET /notes did not return an array:', response.data);
             return [];
         }
     } 
     catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error('Error fetching notes:', error);
         throw error;
     }
 };
 
-export const saveMessage = async (messageContent, credentials) => {
+export const postNote = async (noteContent, credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     try {
         const payload = { 
-            title: messageContent.title || 'Untitled',
-            content: messageContent.content || 'Empty',
-            createdAt: messageContent.createdAt || new Date().toLocaleString(),
-            category: messageContent.category || 'Empty'};
-        if (messageContent.id) {
-            // Update existing message
-            const response = await instance.put(`${API_URL}/notes/${messageContent.id}`, payload);
+            title: noteContent.title || 'Untitled',
+            content: noteContent.content || 'Empty',
+            createdAt: noteContent.createdAt || new Date().toLocaleString(),
+            category: noteContent.category || 'Empty'};
+        if (noteContent.id) {
+            // Update existing note
+            const response = await instance.put(`${API_URL}/notes/${noteContent.id}`, payload);
             return response.data;
         }
         else {
-            // Create new message
+            // Create new note
             const response = await instance.post(`${API_URL}/notes`, payload);
             return response.data;
         }
     } 
     catch (error) {
-        console.error('Error saving message:', error);
+        console.error('Error saving note:', error);
         throw error;
     }
 };
 
-export const delMessage = async (messageId, credentials) => {
+export const delNote = async (noteId, credentials) => {
     const instance = createAuthenticatedAxios(credentials);
     try {
-        console.log('Deleting message with ID:', messageId);
-        await instance.delete(`${API_URL}/notes/${messageId}`);
+        console.log('Deleting note with ID:', noteId);
+        await instance.delete(`${API_URL}/notes/${noteId}`);
     }
     catch (error) {
-        console.error('Error deleting message:', error);
+        console.error('Error deleting notee:', error);
         throw error;
     }
 }
@@ -88,19 +88,6 @@ export const getCategory = async (credentials) => {
     } 
     catch (error) {
         console.error('Error fetching categories:', error);
-        throw error;
-    }
-};
-
-export const saveCategory = async (categoryContent, credentials) => {
-    const instance = createAuthenticatedAxios(credentials);
-    try {
-        const payload = { content: categoryContent || '' };
-        const response = await instance.post(`${API_URL}/category`, payload);
-        return response.data;
-    } 
-    catch (error) {
-        console.error('Error saving category:', error);
         throw error;
     }
 };
