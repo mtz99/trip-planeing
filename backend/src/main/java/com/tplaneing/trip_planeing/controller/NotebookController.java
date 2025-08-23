@@ -31,7 +31,7 @@ public class NotebookController {
                 //Update the fields:
                 existingNote.setTitle(noteDetails.getTitle());
                 existingNote.setContent(noteDetails.getContent());
-                existingNote.setCategories(noteDetails.getCategories());
+                existingNote.setCategory(noteDetails.getCategory());
 
                 //Save the updated note and return
                 Notes updatedNote = notesRepository.save(existingNote);

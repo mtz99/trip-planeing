@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './NotesApplet.css';
-import { getMessages, saveMessage, delMessage, getCategory, saveCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
+import { getMessages, saveMessage, delMessage, getCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
   // Variables for notes, categories, search, and filter
@@ -37,7 +37,10 @@ const NoteApp = () => {
     const fetchCategories = async () => {
       try {
           const savedCategories = await getCategory({ username: 'testuser', password: 'password' });
-          setCategories(savedCategories);
+          
+          const categoryStrings = savedCategories.map(cat => cat.content);
+          
+          setCategories(categoryStrings);
       } catch (error) {
           console.error('Failed to fetch categories', error);
       }
@@ -86,17 +89,6 @@ const NoteApp = () => {
     setIsPreview(false);
   };
 
-  // Add a new category
-  const addCategory = async () => {
-    const newCategory = prompt('Enter a new category name:');
-    if (newCategory && !categories.includes(newCategory)) {
-
-      const savedCategory = await saveCategory(newCategory, { username: 'testuser', password: 'password' });
-
-      setCategories([...categories, savedCategory]);
-    }
-  };
-
   // Filter notes based on search term and selected category
   const filteredNotes = notes.filter(note => {
     const matchesSearch = note.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -136,19 +128,8 @@ const NoteApp = () => {
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
-            <button 
-              onClick={addCategory}
-              className="bg-gray-200 px-2 py-1 rounded text-sm"
-            >
-              + New Category
-            </button>
             
-            <button 
-              onClick={togglePreview}
-              className="bg-gray-200 px-2 py-1 rounded text-sm ml-auto"
-            >
-              {isPreview ? 'Edit' : 'Preview'}
-            </button>
+            
           </div>
         </div>
         
@@ -166,6 +147,13 @@ const NoteApp = () => {
         )}
         
         <div className="flex justify-between">
+          <button 
+              onClick={togglePreview}
+              className="bg-gray-200 px-2 py-1 rounded text-sm ml-auto"
+            >
+              {isPreview ? 'Edit' : 'Preview'}
+            </button>
+
           <button 
             onClick={saveNote}
             className="bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-600"

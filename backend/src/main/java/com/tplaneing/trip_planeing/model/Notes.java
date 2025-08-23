@@ -27,9 +27,9 @@ public class Notes {
 
     public void setContent(String content){ this.content = content; }
 
-    public String getCategories(){ return category; }
+    public String getCategory(){ return category; }
 
-    public void setCategories(String category){ this.category = category; }
+    public void setCategory(String category){ this.category = category; }
 
     public String getCreatedAt(){ return createdAt; }
 

@@ -41,7 +41,7 @@ export const saveMessage = async (messageContent, credentials) => {
             title: messageContent.title || 'Untitled',
             content: messageContent.content || 'Empty',
             createdAt: messageContent.createdAt || new Date().toLocaleString(),
-            categories: messageContent.category || 'Empty'};
+            category: messageContent.category || 'Empty'};
         if (messageContent.id) {
             // Update existing message
             const response = await instance.put(`${API_URL}/notes/${messageContent.id}`, payload);
