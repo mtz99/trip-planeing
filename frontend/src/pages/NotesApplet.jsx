@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import './NotesApplet.css';
+import { getNote, postNote, delNote, getCategory } from '../services/apiService'; //Custom axios API service to save/load notes.
 
 const NoteApp = () => {
-  // State for notes and current note being edited
+  // Variables for notes, categories, search, and filter
   const [notes, setNotes] = useState([]);
   const [currentNote, setCurrentNote] = useState({ 
     id: null, 
@@ -16,34 +17,43 @@ const NoteApp = () => {
   const [filterCategory, setFilterCategory] = useState('All');
   const [isPreview, setIsPreview] = useState(false);
 
-  // Load notes from localStorage on initial render
+
+  // Load notes and categories from backend on initial render
   useEffect(() => {
     document.body.classList.add('notes-body');
+    
+    // Fetch notes from backend
+    const fetchNotes = async () => {
+      try {
+          const savedNotes = await getNote({ username: 'testuser', password: 'password' });
+          setNotes(savedNotes);
+      } catch (error) {
+          console.error('Failed to fetch messages', error);
+      }
+    };
+    fetchNotes();
+    
+    const fetchCategories = async () => {
+      try {
+          const savedCategories = await getCategory({ username: 'testuser', password: 'password' });
+          
+          const categoryStrings = savedCategories.map(cat => cat.content);
+          
+          setCategories(categoryStrings);
+      } catch (error) {
+          console.error('Failed to fetch categories', error);
+      }
+    };
+    fetchCategories();
 
-    const savedNotes = localStorage.getItem('notes');
-    const savedCategories = localStorage.getItem('categories');
-    
-    if (savedNotes) {
-      setNotes(JSON.parse(savedNotes));
-    }
-    
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    }
   }, []);
 
-  // Save notes and categories to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem('notes', JSON.stringify(notes));
-  }, [notes]);
   
-  useEffect(() => {
-    localStorage.setItem('categories', JSON.stringify(categories));
-  }, [categories]);
-
   // Create a new note or update existing one
-  const saveNote = () => {
+  const saveNote = async () => {
     if (!currentNote.title.trim() && !currentNote.content.trim()) return;
+    
+    const savedNote = await postNote(currentNote, { username: 'testuser', password: 'password' });
     
     if (currentNote.id) {
       // Update existing note
@@ -51,13 +61,7 @@ const NoteApp = () => {
         note.id === currentNote.id ? currentNote : note
       ));
     } else {
-      // Create new note
-      const newNote = {
-        ...currentNote,
-        id: Date.now(),
-        createdAt: new Date().toLocaleString()
-      };
-      setNotes([newNote, ...notes]);
+      setNotes([savedNote, ...notes]);
     }
     
     // Reset current note
@@ -67,21 +71,21 @@ const NoteApp = () => {
 
   // Delete a note
   const deleteNote = (id) => {
-    setNotes(notes.filter(note => note.id !== id));
+    try{
+        delNote(id, { username: 'testuser', password: 'password' });
+        // Remove note from state
+        setNotes(notes.filter(note => note.id !== id));
+    }
+    catch (error) {
+        console.error('Failed to delete message', error);
+    }
+    
   };
 
   // Edit a note (load it into the form)
   const editNote = (note) => {
     setCurrentNote(note);
     setIsPreview(false);
-  };
-
-  // Add a new category
-  const addCategory = () => {
-    const newCategory = prompt('Enter a new category name:');
-    if (newCategory && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory]);
-    }
   };
 
   // Filter notes based on search term and selected category
@@ -123,19 +127,8 @@ const NoteApp = () => {
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
-            <button 
-              onClick={addCategory}
-              className="bg-gray-200 px-2 py-1 rounded text-sm"
-            >
-              + New Category
-            </button>
             
-            <button 
-              onClick={togglePreview}
-              className="bg-gray-200 px-2 py-1 rounded text-sm ml-auto"
-            >
-              {isPreview ? 'Edit' : 'Preview'}
-            </button>
+            
           </div>
         </div>
         
@@ -153,6 +146,13 @@ const NoteApp = () => {
         )}
         
         <div className="flex justify-between">
+          <button 
+              onClick={togglePreview}
+              className="bg-gray-200 px-2 py-1 rounded text-sm ml-auto"
+            >
+              {isPreview ? 'Edit' : 'Preview'}
+            </button>
+
           <button 
             onClick={saveNote}
             className="bg-blue-500 text-black px-4 py-2 rounded hover:bg-blue-600"
