@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: trip-planeing-app-db
+    environment:
+      POSTGRES_DB: trip-planeing_app
+      POSTGRES_USER: tp-testuser
+      POSTGRES_PASSWORD: tp-testpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Optional: for initial setup
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
